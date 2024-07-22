@@ -1,0 +1,16 @@
+{
+  "name": "treeemap-diagram",
+  "homepage": "https://popelkin-roman.github.io/treeemap-diagram/",
+  "version": "1.0.0",
+  "description": "A treemap diagram built with D3.js library",
+  "main": "index.html",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "deploy": "gh-pages -d ./"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "gh-pages": "^6.1.1"
+  }
+}
