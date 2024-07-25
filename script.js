@@ -16,8 +16,6 @@ const drawChart = (data) => {
     const root = d3.treemap()
     .tile(d3.treemapBinary)
     .size([w, h])
-    .padding(1)
-    .round(true)
   (d3.hierarchy(data)
       .sum(d => d.value)
       .sort((a, b) => b.value - a.value));
@@ -28,15 +26,16 @@ const drawChart = (data) => {
       .attr("width", w)
       .attr("height", h)
       .attr("style", "max-width: 100%; height: auto; font: 10px sans-serif;");
+    
+    d3.select(".treemap")
+      .append("div")
+      .attr("id", "tooltip")
+      .style("visibility", "hidden");
 
     const leaf = svg.selectAll("g")
     .data(root.leaves())
     .join("g")
       .attr("transform", d => `translate(${d.x0},${d.y0})`);
-
-    const format = d3.format(",d");
-    leaf.append("title")
-        .text(d => `${d.ancestors().reverse().map(d => d.data.name).join(".")}\n${format(d.value)}`);
 
     leaf.append("rect")
       .attr("class", "tile")
@@ -62,7 +61,7 @@ const drawChart = (data) => {
             tooltip.append("div")
                 .text(d.data.value)
         })
-        .on("mouseout", (e,d) => {
+        .on("mouseout", (e) => {
             e.target.style.fill = tileColor;
             d3.select("#tooltip")
                 .style("visibility", "hidden")
@@ -70,42 +69,44 @@ const drawChart = (data) => {
             
         })
     
+      leaf.append("text")
+        // .attr("clip-path", d => d.clipUid)
+      .selectAll("tspan")
+      .data(d => d.data.name.split(/(?=[A-Z][a-z])|\s+/g).concat())
+      .join("tspan")
+        .attr("x", 3)
+        .attr("y", (d, i, nodes) => `${(i === nodes.length - 1) * 0.3 + 1.1 + i * 0.9}em`)
+        .attr("fill-opacity", (d, i, nodes) => i === nodes.length - 1 ? 0.7 : null)
+        .text(d => d);
+    
     
     // const legendContainer = svg.append('g').attr('id', 'legend');
+    const legendContainer = d3.select(".treemap")
+      .append("svg")
+      .append('g').attr('id', 'legend');
 
-    // const legend = legendContainer
-    //       .selectAll('#legend')
-    //       .data(color.domain())
-    //       .enter()
-    //       .append('g')
-    //       .attr('class', 'legend-label')
-    //       .attr('transform', function (d, i) {
-    //         return 'translate(0,' + (h / 2 - i * 20) + ')';
-    //       });
+    const legend = legendContainer
+          .selectAll('#legend')
+          .data(color.domain())
+          .enter()
+          .append('g')
+          .attr('class', 'legend-label')
+          // .attr('transform', function (d, i) {
+          //   return 'translate(0,' + (h  - i * 20) + ')';
+          // });
     
-    //     legend
-    //       .append('rect')
-    //       .attr('x', w - 18)
-    //       .attr('width', 18)
-    //       .attr('height', 18)
-    //       .style('fill', color);
+    legend
+          .append('rect')
+          // .attr('x', w - 18)
+          .attr('width', 18)
+          .attr('height', 18)
+          .style('fill', color);
     
-    //     legend
-    //       .append('text')
-    //       .attr('x', w - 24)
-    //       .attr('y', 9)
-    //       .attr('dy', '.35em')
-    //       .style('text-anchor', 'end')
-    //       .text(function (d) {
-    //         if (d) {
-    //           return 'Riders with doping allegations';
-    //         } else {
-    //           return 'No doping allegations';
-    //         }
-    //       });
-
-    d3.select(".treemap")
-        .append("div")
-        .attr("id", "tooltip")
-        .style("visibility", "hidden");
+    legend
+          .append('text')
+          .attr('x', w - 24)
+          .attr('y', 9)
+          .attr('dy', '.35em')
+          .style('text-anchor', 'end')
+          .text(d => d);
 }
