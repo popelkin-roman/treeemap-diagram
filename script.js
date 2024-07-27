@@ -43,7 +43,7 @@ const drawChart = (data) => {
       .attr("data-category", d => d.data.category)
       .attr("data-value", d => d.data.value)
       .attr("fill", d => { while (d.depth > 1) d = d.parent; return color(d.data.name); })
-      .attr("fill-opacity", 0.6)
+      // .attr("fill-opacity", 0.6)
       .attr("width", d => d.x1 - d.x0)
       .attr("height", d => d.y1 - d.y0)
       .on("mouseover", (e, d) => {
@@ -80,8 +80,10 @@ const drawChart = (data) => {
         .text(d => d);
     
     
-    // const legendContainer = svg.append('g').attr('id', 'legend');
-    const legendContainer = d3.select(".treemap")
+    // const legendSvg = document.body.append('svg');
+    // const legendContainer = legendSvg.append('g').attr('id', 'legend');
+
+    const legendContainer = d3.select(".legend")
       .append("svg")
       .append('g').attr('id', 'legend');
 
@@ -91,22 +93,23 @@ const drawChart = (data) => {
           .enter()
           .append('g')
           .attr('class', 'legend-label')
-          // .attr('transform', function (d, i) {
-          //   return 'translate(0,' + (h  - i * 20) + ')';
-          // });
+          .attr('transform', function (d, i) {
+            const rows = Math.ceil(color.domain().length / 2);
+            const row = i < rows ? 0 : 1;
+            // console.log(color.domain().length, i);
+            return `translate(${row * 150}, ${(i - rows*row)*20})`;
+          });
     
     legend
           .append('rect')
-          // .attr('x', w - 18)
           .attr('width', 18)
           .attr('height', 18)
+          .attr('class', 'legend-item')
           .style('fill', color);
     
     legend
           .append('text')
-          .attr('x', w - 24)
-          .attr('y', 9)
-          .attr('dy', '.35em')
-          .style('text-anchor', 'end')
+          .attr('dy', '14')
+          .attr('dx', '20')
           .text(d => d);
 }
