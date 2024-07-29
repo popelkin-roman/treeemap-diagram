@@ -8,10 +8,9 @@ const drawChart = (data) => {
     console.log(data);
     const w = 1000;
     const h = 500;
-    const padding = 50;
     let tileColor = '';
-
     const color = d3.scaleOrdinal(data.children.map(d => d.name), d3.schemeTableau10);
+    let tooltip;
 
     const root = d3.treemap()
     .tile(d3.treemapBinary)
@@ -43,23 +42,51 @@ const drawChart = (data) => {
       .attr("data-category", d => d.data.category)
       .attr("data-value", d => d.data.value)
       .attr("fill", d => { while (d.depth > 1) d = d.parent; return color(d.data.name); })
-      // .attr("fill-opacity", 0.6)
       .attr("width", d => d.x1 - d.x0)
       .attr("height", d => d.y1 - d.y0)
       .on("mouseover", (e, d) => {
             tileColor = e.target.style.fill;
             e.target.style.fill = "#aaa";
-            const tooltip = d3.select("#tooltip")
+            let formattedValue = '';
+            for (let i = 0; i < d.data.value.length; i++) {
+              let currentChar = d.data.value[d.data.value.length - i - 1];
+              if ( (i + 1) % 3 == 0 && !(i == d.data.value.length - 1) ) currentChar = " " + currentChar;
+              formattedValue = currentChar + formattedValue;
+            }
+
+            tooltip = d3.select("#tooltip")
                 .attr("data-name", d.data.name)
                 .attr("data-category", d.data.category)
                 .attr("data-value", d.data.value)
-                .style("visibility", "visible")
-                .style("transform", `translateX(${e.clientX}px) translateY(${e.clientY}px)`);
-
+             
+                // console.log(document.querySelector('#tooltip').getBoundingClientRect().bottom);
+                
+                
             tooltip.append("div")
                 .text(d.data.name)
             tooltip.append("div")
-                .text(d.data.value)
+                .text("$" + formattedValue);
+
+            const tooltipHeight = document.querySelector('#tooltip').getBoundingClientRect().height;
+
+            // tooltip
+            //   .style("visibility", "visible")
+            //   .style("transform", `translateX(${e.clientX}px) translateY(${e.clientY - tooltipHeight}px)`);
+            // console.log(document.querySelector('#tooltip').getBoundingClientRect());
+        })
+        .on ("mousemove", (e) => {
+          const tooltipBoundingRect = document.querySelector('#tooltip').getBoundingClientRect();
+          const tooltipHeight = tooltipBoundingRect.height;
+          const tooltipWidth = tooltipBoundingRect.width;
+          const tooltipRight = tooltipBoundingRect.right;
+          // console.log(tooltipBoundingRect.right);
+          // console.log(window.innerWidth);
+
+          const tooltipOffset = tooltipRight > window.innerWidth ? tooltipWidth : 0;
+
+            tooltip
+              .style("visibility", "visible")
+              .style("transform", `translateX(${e.clientX - tooltipOffset}px) translateY(${e.clientY - tooltipHeight}px)`);
         })
         .on("mouseout", (e) => {
             e.target.style.fill = tileColor;
@@ -70,7 +97,6 @@ const drawChart = (data) => {
         })
     
       leaf.append("text")
-        // .attr("clip-path", d => d.clipUid)
       .selectAll("tspan")
       .data(d => d.data.name.split(/(?=[A-Z][a-z])|\s+/g).concat())
       .join("tspan")
@@ -78,13 +104,11 @@ const drawChart = (data) => {
         .attr("y", (d, i, nodes) => `${(i === nodes.length - 1) * 0.3 + 1.1 + i * 0.9}em`)
         .attr("fill-opacity", (d, i, nodes) => i === nodes.length - 1 ? 0.7 : null)
         .text(d => d);
-    
-    
-    // const legendSvg = document.body.append('svg');
-    // const legendContainer = legendSvg.append('g').attr('id', 'legend');
 
     const legendContainer = d3.select(".legend")
       .append("svg")
+      .attr("width", 250)
+      .attr("height", 100)
       .append('g').attr('id', 'legend');
 
     const legend = legendContainer
@@ -96,7 +120,6 @@ const drawChart = (data) => {
           .attr('transform', function (d, i) {
             const rows = Math.ceil(color.domain().length / 2);
             const row = i < rows ? 0 : 1;
-            // console.log(color.domain().length, i);
             return `translate(${row * 150}, ${(i - rows*row)*20})`;
           });
     
