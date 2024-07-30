@@ -58,35 +58,20 @@ const drawChart = (data) => {
                 .attr("data-name", d.data.name)
                 .attr("data-category", d.data.category)
                 .attr("data-value", d.data.value)
-             
-                // console.log(document.querySelector('#tooltip').getBoundingClientRect().bottom);
-                
-                
+               
             tooltip.append("div")
                 .text(d.data.name)
             tooltip.append("div")
                 .text("$" + formattedValue);
-
-            const tooltipHeight = document.querySelector('#tooltip').getBoundingClientRect().height;
-
-            // tooltip
-            //   .style("visibility", "visible")
-            //   .style("transform", `translateX(${e.clientX}px) translateY(${e.clientY - tooltipHeight}px)`);
-            // console.log(document.querySelector('#tooltip').getBoundingClientRect());
         })
         .on ("mousemove", (e) => {
           const tooltipBoundingRect = document.querySelector('#tooltip').getBoundingClientRect();
           const tooltipHeight = tooltipBoundingRect.height;
           const tooltipWidth = tooltipBoundingRect.width;
-          const tooltipRight = tooltipBoundingRect.right;
-          // console.log(tooltipBoundingRect.right);
-          // console.log(window.innerWidth);
-
-          const tooltipOffset = tooltipRight > window.innerWidth ? tooltipWidth : 0;
-
-            tooltip
-              .style("visibility", "visible")
-              .style("transform", `translateX(${e.clientX - tooltipOffset}px) translateY(${e.clientY - tooltipHeight}px)`);
+          const tooltipOffset = e.clientX + tooltipWidth > window.innerWidth ? tooltipWidth : 0;
+          tooltip
+            .style("visibility", "visible")
+            .style("transform", `translateX(${e.clientX - tooltipOffset}px) translateY(${e.clientY - tooltipHeight}px)`);
         })
         .on("mouseout", (e) => {
             e.target.style.fill = tileColor;
